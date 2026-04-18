@@ -31,3 +31,19 @@ export interface WSMessage<T = any> {
   userId?: string;
   payload: T;
 }
+
+export interface StatusPayload {
+  status: 'typing' | 'speaking' | 'idle';
+  userId: string;
+}
+
+export interface StoryPayload {
+  lines: string[];
+  sentiment: string;
+}
+
+export interface RoomPayload {
+  sessionId: string;
+  userId: string;
+  partnerJoined: boolean;
+}
