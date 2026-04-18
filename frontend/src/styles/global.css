@@ -8,4 +8,11 @@
 
   --font-serif: "Georgia", serif;
   --font-sans: "Inter", sans-serif;
-}
+  }
+
+  @layer base {
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+  }
