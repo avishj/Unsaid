@@ -1,0 +1,14 @@
+{
+  "name": "unsaid-monorepo",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "scripts": {
+    "dev:frontend": "cd frontend && bun run dev",
+    "dev:backend": "cd backend && bun run index.ts",
+    "install:all": "bun install"
+  }
+}
