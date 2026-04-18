@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PhaseRouter from '../components/PhaseRouter';
+---
+
+<Layout title="Unsaid | Every conflict has two stories.">
+	<main class="h-screen w-screen overflow-hidden bg-background">
+		<PhaseRouter client:load />
+	</main>
+</Layout>

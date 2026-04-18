@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PhaseRouter from '../components/PhaseRouter';
+---
+
+<Layout title="Unsaid | Private Session">
+	<main class="h-screen w-screen overflow-hidden bg-background">
+		<PhaseRouter client:load />
+	</main>
+</Layout>
+
+<script>
+	import { useSessionStore } from '../store/useSessionStore';
+	import { AppPhase } from '@shared/types';
+
+	const sessionId = window.location.pathname.split('/').pop();
+	if (sessionId && sessionId !== '') {
+		useSessionStore.getState().setSessionId(sessionId);
+		useSessionStore.getState().setPhase(AppPhase.WAITING);
+	}
+</script>
