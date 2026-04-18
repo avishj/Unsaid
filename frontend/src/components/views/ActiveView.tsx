@@ -1,8 +1,8 @@
-import React, { useRef, useLayoutEffect, useState, useCallback } from 'react';
+import React, { useRef, useLayoutEffect, useState, useCallback, useEffect } from 'react';
 import gsap from 'gsap';
 import { useSessionStore } from '@store/useSessionStore';
-import { WSMessageType } from '@shared/types';
-import { AppPhase } from '@shared/types';
+import { WSMessageType, AppPhase } from '@shared/types';
+import { useAudioVisualizer } from '@hooks/useAudioVisualizer';
 
 interface ActiveViewProps {
   sendMessage: (type: WSMessageType, payload: any) => void;
@@ -11,11 +11,11 @@ interface ActiveViewProps {
 const zenPrompts = [
   "take a breath.",
   "i hear you.",
-  "is there more?",
+  "is there more to that feeling?",
   "what are you feeling right now?",
   "take your time.",
   "it's safe here.",
-  "let it out.",
+  "let it out, everything is heard.",
 ];
 
 export const ActiveView: React.FC<ActiveViewProps> = ({ sendMessage }) => {
@@ -23,10 +23,10 @@ export const ActiveView: React.FC<ActiveViewProps> = ({ sendMessage }) => {
   const textRef = useRef<HTMLTextAreaElement>(null);
   const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [zenPrompt, setZenPrompt] = useState<string | null>(null);
-  const { transcript, setTranscript, partnerStatus, setPhase, isRecording, setIsRecording } = useSessionStore();
-  const [useVoice, setUseVoice] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const { transcript, setTranscript, partnerStatus, setPhase, setIsRecording } = useSessionStore();
+  
+  // Real-time audio intensity for the orb
+  const rms = useAudioVisualizer();
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -44,7 +44,6 @@ export const ActiveView: React.FC<ActiveViewProps> = ({ sendMessage }) => {
         ease: 'expo.out',
       });
     }, containerRef);
-
     return () => ctx.revert();
   }, []);
 
@@ -54,32 +53,39 @@ export const ActiveView: React.FC<ActiveViewProps> = ({ sendMessage }) => {
       const prompt = zenPrompts[Math.floor(Math.random() * zenPrompts.length)];
       setZenPrompt(prompt);
       setTimeout(() => setZenPrompt(null), 5000);
-    }, 6000);
+    }, 8000);
   }, []);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTranscript(e.target.value);
-    sendMessage(WSMessageType.STATUS_UPDATE, { status: 'typing' });
+    sendMessage(WSMessageType.STATUS_UPDATE, { status: e.target.value ? 'typing' : 'idle' });
     resetSilenceTimer();
   };
 
   const handleSubmit = () => {
     if (!transcript.trim()) return;
+    setIsRecording(false);
     sendMessage(WSMessageType.SUBMIT_TRANSCRIPT, { text: transcript });
     setPhase(AppPhase.SYNTHESIS);
   };
 
+  // Auto-start recording on mount for the visualizer
+  useEffect(() => {
+    setIsRecording(true);
+    return () => setIsRecording(false);
+  }, []);
+
   return (
-    <div ref={containerRef} className="flex flex-col items-center justify-center h-full gap-6 px-6 max-w-2xl mx-auto w-full">
+    <div ref={containerRef} className="flex flex-col items-center justify-center h-full gap-6 px-6 max-w-2xl mx-auto w-full relative z-20">
       {partnerStatus !== 'idle' && (
-        <div className="flex items-center gap-2 text-foreground/30 text-xs tracking-[0.2em] uppercase">
-          <span className="w-2 h-2 rounded-full bg-accent/60 animate-pulse" />
+        <div className="flex items-center gap-2 text-foreground/30 text-[10px] tracking-[0.3em] uppercase absolute top-12">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent/40 animate-ping" />
           partner is {partnerStatus}
         </div>
       )}
 
       {zenPrompt && (
-        <p className="text-foreground/30 text-sm font-serif italic tracking-wide animate-pulse">
+        <p className="text-foreground/30 text-sm font-serif italic tracking-wide animate-pulse absolute top-24">
           {zenPrompt}
         </p>
       )}
@@ -89,21 +95,19 @@ export const ActiveView: React.FC<ActiveViewProps> = ({ sendMessage }) => {
         value={transcript}
         onChange={handleTextChange}
         placeholder="say what you never could..."
-        className="active-textarea w-full flex-1 max-h-[50vh] min-h-[200px] bg-transparent border-none outline-none resize-none text-foreground/80 text-lg md:text-xl font-serif leading-relaxed tracking-wide placeholder:text-foreground/15"
+        className="active-textarea w-full flex-1 max-h-[40vh] min-h-[150px] bg-transparent border-none outline-none resize-none text-foreground/70 text-xl md:text-2xl font-serif leading-relaxed tracking-wide placeholder:text-foreground/10 text-center mt-20"
         autoFocus
       />
 
-      <div className="active-controls flex items-center gap-4 w-full justify-center pb-8">
+      <div className="active-controls flex items-center gap-4 w-full justify-center pb-12">
         <button
           onClick={handleSubmit}
           disabled={!transcript.trim()}
-          className="px-8 py-3 border border-foreground/10 rounded-full text-foreground/60 text-sm tracking-[0.2em] uppercase backdrop-blur-sm bg-white/[0.02] hover:bg-white/[0.05] hover:border-foreground/20 transition-all duration-300 disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+          className="px-10 py-4 border border-white/10 rounded-full text-foreground/40 text-[10px] tracking-[0.3em] uppercase backdrop-blur-md bg-white/[0.02] hover:bg-white/[0.05] hover:text-foreground/80 hover:border-white/20 transition-all duration-700 disabled:opacity-10 cursor-pointer"
         >
-          i've said it all
+          i've said enough
         </button>
       </div>
     </div>
   );
 };
-
-export default ActiveView;
