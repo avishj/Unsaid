@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { WSMessageType, type WSMessage, AppPhase } from '../shared/types';
+import { WSMessageType, type WSMessage, AppPhase } from '../../shared/types';
 
 interface Room {
   id: string;
