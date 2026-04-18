@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { EffectComposer, Bloom, Noise } from '@react-three/postprocessing';
 import { BreathingOrb } from './BreathingOrb';
 
 export const Scene: React.FC = () => {
@@ -12,6 +13,14 @@ export const Scene: React.FC = () => {
         <Suspense fallback={null}>
           <BreathingOrb />
         </Suspense>
+        <EffectComposer>
+          <Bloom 
+            intensity={1.5} 
+            luminanceThreshold={0.1} 
+            luminanceSmoothing={0.9} 
+          />
+          <Noise opacity={0.05} />
+        </EffectComposer>
       </Canvas>
     </div>
   );
