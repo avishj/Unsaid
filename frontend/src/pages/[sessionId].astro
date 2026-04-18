@@ -11,7 +11,7 @@ import PhaseRouter from '../components/PhaseRouter';
 
 <script>
 	import { useSessionStore } from '../store/useSessionStore';
-	import { AppPhase } from '../../shared/types';
+	import { AppPhase } from '@shared/types';
 
 	const sessionId = window.location.pathname.split('/').pop();
 	if (sessionId && sessionId !== '') {
