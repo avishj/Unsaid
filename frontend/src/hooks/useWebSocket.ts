@@ -13,9 +13,10 @@ export const useWebSocket = () => {
     socketRef.current = socket;
 
     socket.onopen = () => {
-      console.log('WS Connection Established');
+      console.log('✅ WS Connection Established');
       const sessionId = store.getState().sessionId;
       if (sessionId) {
+        console.log('Attempting to join session:', sessionId);
         socket.send(JSON.stringify({
           type: WSMessageType.JOIN_ROOM,
           payload: { sessionId },
@@ -23,7 +24,12 @@ export const useWebSocket = () => {
       }
     };
 
+    socket.onerror = (error) => {
+      console.error('❌ WS Connection Error:', error);
+    };
+
     socket.onmessage = (event) => {
+      console.log('📩 WS Message Received:', event.data);
       const message: WSMessage = JSON.parse(event.data);
       const { setPhase, setSessionId, setUserId, setPartnerStatus, setStory, setSentiment } = store.getState();
 

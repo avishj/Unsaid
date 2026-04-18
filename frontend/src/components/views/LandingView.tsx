@@ -1,12 +1,14 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useSessionStore } from '@store/useSessionStore';
-import { useWebSocket } from '@hooks/useWebSocket';
 import { AppPhase, WSMessageType } from '@shared/types';
 
-export const LandingView: React.FC = () => {
+interface LandingViewProps {
+  sendMessage: (type: WSMessageType, payload: any) => void;
+}
+
+export const LandingView: React.FC<LandingViewProps> = ({ sendMessage }) => {
   const container = useRef<HTMLDivElement>(null);
-  const { sendMessage } = useWebSocket();
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {

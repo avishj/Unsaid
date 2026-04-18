@@ -33,7 +33,7 @@ const PhaseRouter: React.FC = () => {
   const renderPhase = () => {
     switch (phase) {
       case AppPhase.LANDING:
-        return <LandingView />;
+        return <LandingView sendMessage={sendMessage} />;
       case AppPhase.WAITING:
         return <WaitingView />;
       case AppPhase.ACTIVE:
