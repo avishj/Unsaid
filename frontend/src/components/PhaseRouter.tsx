@@ -5,15 +5,18 @@ import { useWebSocket } from '@hooks/useWebSocket';
 import { AppPhase } from '@shared/types';
 import { LandingView } from './views/LandingView';
 import { WaitingView } from './views/WaitingView';
-import ActiveView from './views/ActiveView';
-import SynthesisView from './views/SynthesisView';
-import RevealView from './views/RevealView';
+import { ActiveView } from './views/ActiveView';
+import { SynthesisView } from './views/SynthesisView';
+import { RevealView } from './views/RevealView';
+import { useAmbientDrone } from '@hooks/useAmbientDrone';
 
 const PhaseRouter: React.FC = () => {
   const phase = useSessionStore((state) => state.phase);
   const prevPhaseRef = useRef(phase);
   const contentRef = useRef<HTMLDivElement>(null);
   const { sendMessage } = useWebSocket();
+  
+  useAmbientDrone();
 
   useLayoutEffect(() => {
     if (prevPhaseRef.current !== phase && contentRef.current) {
