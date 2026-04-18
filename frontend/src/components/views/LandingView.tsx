@@ -16,12 +16,17 @@ export const LandingView: React.FC = () => {
         duration: 2,
         ease: 'expo.out',
       });
-      gsap.from('.cta', {
-        opacity: 0,
-        duration: 1,
-        delay: 1,
-        ease: 'power2.inOut',
-      });
+      gsap.fromTo('.cta', 
+        { opacity: 0, y: 10 },
+        { 
+          opacity: 1, 
+          y: 0,
+          duration: 1,
+          delay: 1,
+          ease: 'power2.inOut',
+          clearProps: 'all'
+        }
+      );
     }, container);
     return () => ctx.revert();
   }, []);
@@ -38,7 +43,7 @@ export const LandingView: React.FC = () => {
         onClick={() => sendMessage(WSMessageType.CREATE_ROOM, {})}
         className="cta px-8 py-3 border border-foreground/20 bg-foreground/5 backdrop-blur-sm rounded-full 
                    text-foreground/80 hover:bg-foreground/10 hover:border-foreground/40 
-                   transition-all duration-500 font-sans tracking-widest uppercase text-xs cursor-pointer"
+                   font-sans tracking-widest uppercase text-xs cursor-pointer"
       >
         Start Session
       </button>
