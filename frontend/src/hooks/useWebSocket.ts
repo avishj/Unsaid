@@ -8,7 +8,8 @@ export const useWebSocket = () => {
 
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = import.meta.env.PUBLIC_WS_URL || 'localhost:3000';
+    // Use 127.0.0.1 instead of localhost for better Firefox compatibility
+    const host = import.meta.env.PUBLIC_WS_URL || '127.0.0.1:3000';
     const socket = new WebSocket(`${protocol}//${host}`);
     socketRef.current = socket;
 

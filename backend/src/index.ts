@@ -12,12 +12,20 @@ const rooms = new Map<string, Room>();
 
 const server = Bun.serve({
   port: 3000,
+  hostname: "0.0.0.0",
   fetch(req, server) {
-    if (server.upgrade(req)) return;
+    const success = server.upgrade(req, {
+      data: { sessionId: '', userId: '' }
+    });
+    if (success) return undefined;
     return new Response("Unsaid Weaver Active");
   },
   websocket: {
+    open(ws) {
+      console.log('🌐 New WebSocket Connection');
+    },
     message(ws, message) {
+      const data = ws.data as { sessionId: string, userId: string };
       const msg: WSMessage = JSON.parse(message as string);
       
       switch (msg.type) {
@@ -25,7 +33,8 @@ const server = Bun.serve({
           const id = nanoid(6);
           const userId = nanoid(4);
           rooms.set(id, { id, userA: ws, transcripts: new Map() });
-          ws.data = { sessionId: id, userId };
+          data.sessionId = id;
+          data.userId = userId;
           ws.send(JSON.stringify({ type: WSMessageType.CREATE_ROOM, payload: { sessionId: id, userId } }));
           break;
 
@@ -35,17 +44,18 @@ const server = Bun.serve({
           if (room) {
             const bId = nanoid(4);
             room.userB = ws;
-            ws.data = { sessionId: roomId, userId: bId };
+            data.sessionId = roomId;
+            data.userId = bId;
             ws.send(JSON.stringify({ type: WSMessageType.JOIN_ROOM, payload: { sessionId: roomId, userId: bId } }));
             room.userA.send(JSON.stringify({ type: WSMessageType.ROOM_READY, payload: {} }));
-            room.userB.send(JSON.stringify({ type: WSMessageType.ROOM_READY, payload: {} }));
+            ws.send(JSON.stringify({ type: WSMessageType.ROOM_READY, payload: {} }));
           }
           break;
 
         case WSMessageType.SUBMIT_TRANSCRIPT:
-          const sRoom = rooms.get(ws.data.sessionId);
+          const sRoom = rooms.get(data.sessionId);
           if (sRoom) {
-            sRoom.transcripts.set(ws.data.userId, msg.payload.text);
+            sRoom.transcripts.set(data.userId, msg.payload.text);
             if (sRoom.transcripts.size === 2) {
               sRoom.userA.send(JSON.stringify({ type: WSMessageType.REVEAL_STORY, payload: { 
                 lines: ["You both carry a weight you didn't choose.", "One of you felt small, while the other felt invisible.", "But under it all, you both just want to be known.", "It is safe to talk now."],
