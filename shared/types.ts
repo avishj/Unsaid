@@ -24,3 +24,10 @@ export enum WSMessageType {
   ERROR = 'ERROR',
   HEARTBEAT = 'HEARTBEAT'
 }
+
+export interface WSMessage<T = any> {
+  type: WSMessageType;
+  sessionId?: string;
+  userId?: string;
+  payload: T;
+}
